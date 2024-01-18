@@ -1,25 +1,29 @@
-import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import {App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting} from 'obsidian';
 import {StartCounterModal} from "src/StartCounterModal";
 
 
 // Remember to rename these classes and interfaces!
 
 interface BrainShardSettings {
-	defaultDashDuration: number;
+	defaultProperty: string;
+	defaultRestDuration: string;
+	defaultDashDuration: string;
 }
 
 const DEFAULT_SETTINGS: BrainShardSettings = {
-	defaultDashDuration: 25
+	defaultDashDuration: '25',
+	defaultRestDuration: '5',
+	defaultProperty: 'Effort'
 }
 
-export default class MyPlugin extends Plugin {
+export default class BrainShardPlugin extends Plugin {
 	settings: BrainShardSettings;
 
-	handleTimeStart(time:number) {
+	handleTimeStart(time: number) {
 		new Notice(`Very well! You are about to embark in a super productive trip for ${time} minutes!`);
 		let counter = 5
-		const interval = setInterval(function() {
-			if(counter == 0) {
+		const interval = setInterval(function () {
+			if (counter == 0) {
 				clearInterval(interval);
 			} else {
 				new Notice('5 seconds gone')
@@ -82,7 +86,7 @@ export default class MyPlugin extends Plugin {
 		});
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+		this.addSettingTab(new BrainShardSettingsTab(this.app, this));
 
 		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
 		// Using this function will automatically remove the event listener when this plugin is disabled.
@@ -107,10 +111,10 @@ export default class MyPlugin extends Plugin {
 	}
 }
 
-class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
+class BrainShardSettingsTab extends PluginSettingTab {
+	plugin: BrainShardPlugin;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: BrainShardPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
@@ -122,13 +126,35 @@ class SampleSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Default Dash duration')
-			.setDesc('These are the periods of time you will remain focused on one Vault Item')
+			.setDesc('These are the periods of time you will remain focused on one Vault Item.')
 			.addText(text => text
-				.setPlaceholder('Enter your secret')
+				.setPlaceholder('dash duration in minutes')
 				.setValue(this.plugin.settings.defaultDashDuration)
 				.onChange(async (value) => {
 					this.plugin.settings.defaultDashDuration = value;
 					await this.plugin.saveSettings();
 				}));
+
+		new Setting(containerEl)
+			.setName('Default Rest duration')
+			.setDesc('This is the default duration for the resting periods between focus dashes.')
+			.addText(text => text
+				.setPlaceholder('Rest duration in minutes')
+				.setValue(this.plugin.settings.defaultRestDuration)
+				.onChange(async (value) => {
+					this.plugin.settings.defaultRestDuration = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Default note property to store effort')
+			.setDesc('This is the document property where the dash sessions will be added to. Must be numeric.')
+			.addText(text => text
+				.setPlaceholder('Note property')
+				.setValue(this.plugin.settings.defaultProperty)
+				.onChange(async (value) => {
+					this.plugin.settings.defaultProperty = value;
+					await this.plugin.saveSettings();
+				}))
 	}
 }
