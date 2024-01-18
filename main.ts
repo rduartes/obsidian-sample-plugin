@@ -4,16 +4,16 @@ import {StartCounterModal} from "src/StartCounterModal";
 
 // Remember to rename these classes and interfaces!
 
-interface MyPluginSettings {
-	mySetting: string;
+interface BrainShardSettings {
+	defaultDashDuration: number;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
+const DEFAULT_SETTINGS: BrainShardSettings = {
+	defaultDashDuration: 25
 }
 
 export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+	settings: BrainShardSettings;
 
 	handleTimeStart(time:number) {
 		new Notice(`Very well! You are about to embark in a super productive trip for ${time} minutes!`);
@@ -121,13 +121,13 @@ class SampleSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
+			.setName('Default Dash duration')
+			.setDesc('These are the periods of time you will remain focused on one Vault Item')
 			.addText(text => text
 				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
+				.setValue(this.plugin.settings.defaultDashDuration)
 				.onChange(async (value) => {
-					this.plugin.settings.mySetting = value;
+					this.plugin.settings.defaultDashDuration = value;
 					await this.plugin.saveSettings();
 				}));
 	}
