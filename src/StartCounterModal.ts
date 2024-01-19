@@ -2,13 +2,15 @@ import {App, Modal, Setting} from "obsidian";
 
 export class StartCounterModal extends Modal {
 
-	time:number;
-
+	time: number;
+	defaultDuration: string;
 	onSubmit: (time: number) => void;
 
-	constructor(app: App, onSubmit: (time: number) => void) {
+	constructor(app: App, onSubmit: (time: number) => void, defaultDuration: string) {
 		super(app);
 		this.onSubmit = onSubmit;
+		this.defaultDuration = defaultDuration;
+		this.time = Number(defaultDuration);
 	}
 
 	onOpen() {
@@ -20,6 +22,7 @@ export class StartCounterModal extends Modal {
 			.setName("Time")
 			.setDesc('(in minutes)')
 			.addText((text) => {
+				text.setValue(this.defaultDuration)
 				text.onChange((value) => {
 					this.time = Number(value);
 				})

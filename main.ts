@@ -39,7 +39,7 @@ export default class BrainShardPlugin extends Plugin {
 		const ribbonIconEl = this.addRibbonIcon('baby', 'Sample Plugin', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
 			//new Notice('This is a notice!');
-			new StartCounterModal(this.app, this.handleTimeStart).open();
+			new StartCounterModal(this.app, this.handleTimeStart, this.settings.defaultDashDuration).open();
 		});
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass('my-plugin-ribbon-class');
@@ -104,6 +104,7 @@ export default class BrainShardPlugin extends Plugin {
 
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		// console.dir(this.settings);
 	}
 
 	async saveSettings() {
