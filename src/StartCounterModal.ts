@@ -2,15 +2,17 @@ import {App, Modal, Setting} from "obsidian";
 
 export class StartCounterModal extends Modal {
 
-	time: number;
+	duration: number;
 	defaultDuration: string;
-	onSubmit: (time: number) => void;
+	onSubmit: (duration: number, statusBarEl:HTMLElement) => void;
+	statusBarElement: HTMLElement;
 
-	constructor(app: App, onSubmit: (time: number) => void, defaultDuration: string) {
+	constructor(app: App, statusBarEl:HTMLElement, onSubmit: (duration: number, statusBarEl:HTMLElement) => void, defaultDuration: string) {
 		super(app);
 		this.onSubmit = onSubmit;
 		this.defaultDuration = defaultDuration;
-		this.time = Number(defaultDuration);
+		this.duration = Number(defaultDuration);
+		this.statusBarElement = statusBarEl;
 	}
 
 	onOpen() {
@@ -19,12 +21,12 @@ export class StartCounterModal extends Modal {
 		contentEl.createEl("h4", {text: "For how long do you want to focus?"});
 
 		new Setting(contentEl)
-			.setName("Time")
+			.setName("Duration")
 			.setDesc('(in minutes)')
 			.addText((text) => {
 				text.setValue(this.defaultDuration)
 				text.onChange((value) => {
-					this.time = Number(value);
+					this.duration = Number(value);
 				})
 			});
 
@@ -34,9 +36,9 @@ export class StartCounterModal extends Modal {
 					.setCta() // cta - call to action (paints the button in the active color)
 					.onClick(() => {
 						this.close();
-						this.onSubmit(this.time)
+						this.onSubmit(this.duration, this.statusBarElement);
 					})
-			)
+			);
 	}
 
 	onClose() {

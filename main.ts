@@ -18,18 +18,23 @@ const DEFAULT_SETTINGS: BrainShardSettings = {
 
 export default class BrainShardPlugin extends Plugin {
 	settings: BrainShardSettings;
+	statusBarEl: HTMLElement;
 
-	handleTimeStart(time: number) {
-		new Notice(`Very well! You are about to embark in a super productive trip for ${time} minutes!`);
-		let counter = 5
-		const interval = setInterval(function () {
+	handleTimeStart(duration: number, statusBarEl: HTMLElement) {
+		console.log(this);
+		new Notice(`Very well! You are about to embark in a super productive trip for ${duration} minutes!`);
+		statusBarEl.setText(`Brain Shard: ${duration} minutes.`)
+		let counter = duration;
+		const interval = setInterval(function (statusBarEl) {
+			console.log(this);
 			if (counter == 0) {
 				clearInterval(interval);
+				new Notice('Time spent! Go rest or do something fun');
 			} else {
-				new Notice('5 seconds gone')
+				statusBarEl.setText(`Brain Shard: ${duration} minutes.`);
 				counter -= 1;
 			}
-		}, 5000)
+		}, 60000, statusBarEl);
 	}
 
 	async onload() {
@@ -39,14 +44,14 @@ export default class BrainShardPlugin extends Plugin {
 		const ribbonIconEl = this.addRibbonIcon('baby', 'Sample Plugin', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
 			//new Notice('This is a notice!');
-			new StartCounterModal(this.app, this.handleTimeStart, this.settings.defaultDashDuration).open();
+			new StartCounterModal(this.app, this.statusBarEl, this.handleTimeStart, this.settings.defaultDashDuration).open();
 		});
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass('my-plugin-ribbon-class');
 
 		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status Bar Text');
+		this.statusBarEl = this.addStatusBarItem();
+		this.statusBarEl.setText('BrainShard Plugin');
 
 		// This adds a simple command that can be triggered anywhere
 		this.addCommand({
