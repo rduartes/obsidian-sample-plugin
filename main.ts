@@ -19,29 +19,33 @@ const DEFAULT_SETTINGS: BrainShardSettings = {
 export default class BrainShardPlugin extends Plugin {
 	settings: BrainShardSettings;
 	statusBarEl: HTMLElement;
+	focusTimer: number;
 
 	handleTimeStart(duration: number, statusBarEl: HTMLElement) {
 		console.log(this);
 		new Notice(`Very well! You are about to embark in a super productive trip for ${duration} minutes!`);
-		let counter = duration;
+		const counter = duration;
 		statusBarEl.setText(`Brain Shard Focus: ${counter} minutes of ${duration}.`)
-		const interval = setInterval((function () {
-			console.log(this);
+		this.focusTimer = window.setInterval(this.updateFocusMessage, 5000, counter); //for minute long timeouts use 60000
+		this.registerInterval(this.focusTimer)
+	}
+
+	updateFocusMessage(counter: number) {
+		console.log(this);
+		if (counter == 0) {
+			clearInterval(this.focusTimer);
+			new Notice('Time spent! Go rest or do something fun');
+			this.statusBarEl.setText('');
+		} else {
+			counter -= 1;
+			let message: string;
 			if (counter == 0) {
-				clearInterval(interval);
-				new Notice('Time spent! Go rest or do something fun');
-				statusBarEl.setText('');
+				message = 'Brain Shard Focus: Almost done! Hang in there!'
 			} else {
-				counter -= 1;
-				let message: string;
-				if(counter == 0) {
-					message = 'Brain Shard Focus: Almost done! Hang in there!'
-				} else {
-					message = `Brain Shard Focus: ${counter} minutes of ${duration}.`
-				}
-				statusBarEl.setText(message);
+				message = `Brain Shard Focus: ${counter} minutes of ${duration}.`
 			}
-		}).bind(this), 5000); //for minute long timeouts use 60000
+			this.statusBarEl.setText(message);
+		}
 	}
 
 	async onload() {
@@ -51,7 +55,10 @@ export default class BrainShardPlugin extends Plugin {
 		const ribbonIconEl = this.addRibbonIcon('baby', 'Sample Plugin', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
 			//new Notice('This is a notice!');
-			new StartCounterModal(this.app, this.statusBarEl, this.handleTimeStart, this.settings.defaultDashDuration).open();
+			new StartCounterModal(
+				this.app, this.statusBarEl,
+				this.handleTimeStart,
+				this.settings.defaultDashDuration).open();
 		});
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass('my-plugin-ribbon-class');
