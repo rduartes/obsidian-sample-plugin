@@ -23,18 +23,25 @@ export default class BrainShardPlugin extends Plugin {
 	handleTimeStart(duration: number, statusBarEl: HTMLElement) {
 		console.log(this);
 		new Notice(`Very well! You are about to embark in a super productive trip for ${duration} minutes!`);
-		statusBarEl.setText(`Brain Shard: ${duration} minutes.`)
 		let counter = duration;
-		const interval = setInterval(function (statusBarEl) {
+		statusBarEl.setText(`Brain Shard Focus: ${counter} minutes of ${duration}.`)
+		const interval = setInterval((function () {
 			console.log(this);
 			if (counter == 0) {
 				clearInterval(interval);
 				new Notice('Time spent! Go rest or do something fun');
+				statusBarEl.setText('');
 			} else {
-				statusBarEl.setText(`Brain Shard: ${duration} minutes.`);
 				counter -= 1;
+				let message: string;
+				if(counter == 0) {
+					message = 'Brain Shard Focus: Almost done! Hang in there!'
+				} else {
+					message = `Brain Shard Focus: ${counter} minutes of ${duration}.`
+				}
+				statusBarEl.setText(message);
 			}
-		}, 60000, statusBarEl);
+		}).bind(this), 5000); //for minute long timeouts use 60000
 	}
 
 	async onload() {
