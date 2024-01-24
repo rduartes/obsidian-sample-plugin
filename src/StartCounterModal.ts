@@ -1,4 +1,6 @@
 import {App, Modal, Setting} from "obsidian";
+import BrainShardPlugin from "../main";
+import {FocusTimer} from "./FocusTimer";
 
 export class StartCounterModal extends Modal {
 
@@ -6,13 +8,17 @@ export class StartCounterModal extends Modal {
 	defaultDuration: string;
 	onSubmit: (duration: number, statusBarEl:HTMLElement) => void;
 	statusBarElement: HTMLElement;
+	plugin:BrainShardPlugin;
+	focusTimer: FocusTimer;
 
-	constructor(app: App, statusBarEl:HTMLElement, onSubmit: (duration: number, statusBarEl:HTMLElement) => void, defaultDuration: string) {
+	constructor(app: App, timer: FocusTimer, statusBarEl:HTMLElement, onSubmit: (duration: number, statusBarEl:HTMLElement) => void, defaultDuration: string, plugin:BrainShardPlugin) {
 		super(app);
+		this.plugin = plugin;
 		this.onSubmit = onSubmit;
 		this.defaultDuration = defaultDuration;
 		this.duration = Number(defaultDuration);
 		this.statusBarElement = statusBarEl;
+		this.focusTimer = timer;
 	}
 
 	onOpen() {
@@ -33,10 +39,10 @@ export class StartCounterModal extends Modal {
 		new Setting(contentEl)
 			.addButton((btn) =>
 				btn.setButtonText("Start")
-					.setCta() // cta - call to action (paints the button in the active color)
+					.setCta() // cta - call to action (paints the button using the active color)
 					.onClick(() => {
 						this.close();
-						this.onSubmit(this.duration, this.statusBarElement);
+						this.focusTimer.start(this.duration);
 					})
 			);
 	}

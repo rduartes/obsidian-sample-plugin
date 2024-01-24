@@ -1,5 +1,6 @@
 import {App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting} from 'obsidian';
 import {StartCounterModal} from "src/StartCounterModal";
+import {FocusTimer} from "./src/FocusTimer";
 
 
 // Remember to rename these classes and interfaces!
@@ -19,46 +20,48 @@ const DEFAULT_SETTINGS: BrainShardSettings = {
 export default class BrainShardPlugin extends Plugin {
 	settings: BrainShardSettings;
 	statusBarEl: HTMLElement;
-	focusTimer: number;
+	focusTimerOld: number;
+	focusTimer:FocusTimer;
 
 	handleTimeStart(duration: number, statusBarEl: HTMLElement) {
-		console.log(this);
+		console.log("handleTimeStart", this);
 		new Notice(`Very well! You are about to embark in a super productive trip for ${duration} minutes!`);
 		const counter = duration;
 		statusBarEl.setText(`Brain Shard Focus: ${counter} minutes of ${duration}.`)
-		this.focusTimer = window.setInterval(this.updateFocusMessage, 5000, counter); //for minute long timeouts use 60000
-		this.registerInterval(this.focusTimer)
+		window.setInterval(this.focusTimerUpdated, 5000, counter); //for minute long timeouts use 60000
+		this.registerInterval(this.focusTimerOld)
 	}
 
-	updateFocusMessage(counter: number) {
-		console.log(this);
-		if (counter == 0) {
-			clearInterval(this.focusTimer);
-			new Notice('Time spent! Go rest or do something fun');
-			this.statusBarEl.setText('');
+	focusTimerUpdated(elapsed: number, duration:number) {
+
+		console.log(this, elapsed, duration);
+
+		if (elapsed == duration -1 ) {
+			console.log(`Brain Shard Focus: Almost done! Only ${duration - elapsed} minutes to go! Hang in there!`);
 		} else {
-			counter -= 1;
-			let message: string;
-			if (counter == 0) {
-				message = 'Brain Shard Focus: Almost done! Hang in there!'
-			} else {
-				message = `Brain Shard Focus: ${counter} minutes of ${duration}.`
-			}
-			this.statusBarEl.setText(message);
+			console.log(`Brain Shard Focus: ${elapsed} minutes of ${duration}.`)
 		}
+		//this.statusBarEl.setText(message);
 	}
 
 	async onload() {
 		await this.loadSettings();
+
+		this.focusTimer = new FocusTimer(this);
+		this.focusTimer.tickUpdate = this.focusTimerUpdated.bind(this);
 
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('baby', 'Sample Plugin', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
 			//new Notice('This is a notice!');
 			new StartCounterModal(
-				this.app, this.statusBarEl,
+				this.app,
+				this.focusTimer,
+				this.statusBarEl,
 				this.handleTimeStart,
-				this.settings.defaultDashDuration).open();
+				this.settings.defaultDashDuration,
+				this,
+			).open();
 		});
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass('my-plugin-ribbon-class');
