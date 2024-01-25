@@ -20,17 +20,8 @@ const DEFAULT_SETTINGS: BrainShardSettings = {
 export default class BrainShardPlugin extends Plugin {
 	settings: BrainShardSettings;
 	statusBarEl: HTMLElement;
-	focusTimerOld: number;
 	focusTimer:FocusTimer;
 
-	handleTimeStart(duration: number, statusBarEl: HTMLElement) {
-		console.log("handleTimeStart", this);
-		new Notice(`Very well! You are about to embark in a super productive trip for ${duration} minutes!`);
-		const counter = duration;
-		statusBarEl.setText(`Brain Shard Focus: ${counter} minutes of ${duration}.`)
-		window.setInterval(this.focusTimerUpdated, 5000, counter); //for minute long timeouts use 60000
-		this.registerInterval(this.focusTimerOld)
-	}
 
 	focusTimerUpdated(elapsed: number, duration:number) {
 
@@ -57,10 +48,7 @@ export default class BrainShardPlugin extends Plugin {
 			new StartCounterModal(
 				this.app,
 				this.focusTimer,
-				this.statusBarEl,
-				this.handleTimeStart,
-				this.settings.defaultDashDuration,
-				this,
+				this.settings.defaultDashDuration
 			).open();
 		});
 		// Perform additional things with the ribbon

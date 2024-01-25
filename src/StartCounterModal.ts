@@ -6,18 +6,12 @@ export class StartCounterModal extends Modal {
 
 	duration: number;
 	defaultDuration: string;
-	onSubmit: (duration: number, statusBarEl:HTMLElement) => void;
-	statusBarElement: HTMLElement;
-	plugin:BrainShardPlugin;
 	focusTimer: FocusTimer;
 
-	constructor(app: App, timer: FocusTimer, statusBarEl:HTMLElement, onSubmit: (duration: number, statusBarEl:HTMLElement) => void, defaultDuration: string, plugin:BrainShardPlugin) {
+	constructor(app: App, timer: FocusTimer, defaultDuration: string) {
 		super(app);
-		this.plugin = plugin;
-		this.onSubmit = onSubmit;
 		this.defaultDuration = defaultDuration;
 		this.duration = Number(defaultDuration);
-		this.statusBarElement = statusBarEl;
 		this.focusTimer = timer;
 	}
 
