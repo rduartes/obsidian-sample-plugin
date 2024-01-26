@@ -1,6 +1,7 @@
-import {App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting} from 'obsidian';
+import {App, Editor, MarkdownView, Plugin, PluginSettingTab, Setting} from 'obsidian';
 import {StartCounterModal} from "src/StartCounterModal";
 import {FocusTimer} from "./src/FocusTimer";
+import {Logger} from "./src/Logger";
 
 
 // Remember to rename these classes and interfaces!
@@ -23,28 +24,37 @@ export default class BrainShardPlugin extends Plugin {
 	focusTimer:FocusTimer;
 
 
-	focusTimerUpdated(elapsed: number, duration:number) {
-
-		console.log(this, elapsed, duration);
+	onTimerTick(elapsed: number, duration:number) {
+		
+		let message = '';
 
 		if (elapsed == duration -1 ) {
-			console.log(`Brain Shard Focus: Almost done! Only ${duration - elapsed} minutes to go! Hang in there!`);
+			message = `Brain Shard Focus: Almost there! Only ${duration - elapsed} minute to go! Hang on, you can do it!`;
 		} else {
-			console.log(`Brain Shard Focus: ${elapsed} minutes of ${duration}.`)
+			message = `Brain Shard Focus: ${elapsed} minutes of ${duration}.`;
 		}
-		//this.statusBarEl.setText(message);
+		Logger.log(this, message);
+		this.statusBarEl.setText(message);
+	}
+
+	onTimerDashCompleted() {
+		Logger.log(this, 'Well done! Dash completed. Time to rest!');
 	}
 
 	async onload() {
 		await this.loadSettings();
 
+		Logger.shouldLog = true;
+
 		this.focusTimer = new FocusTimer(this);
-		this.focusTimer.tickUpdate = this.focusTimerUpdated.bind(this);
+		this.focusTimer.onTick = this.onTimerTick.bind(this);
+		this.focusTimer.onDashComplete = this.onTimerDashCompleted.bind(this);
 
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('baby', 'Sample Plugin', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
-			//new Notice('This is a notice!');
+			// new Notice('This is a notice!');
+			this.app.fileManager.processFrontMatter(this.app.workspace.getActiveFile()!, (properties) => {Logger.log(properties)});
 			new StartCounterModal(
 				this.app,
 				this.focusTimer,
@@ -71,7 +81,7 @@ export default class BrainShardPlugin extends Plugin {
 			id: 'sample-editor-command',
 			name: 'Sample editor command',
 			editorCallback: (editor: Editor, view: MarkdownView) => {
-				console.log(editor.getSelection());
+				Logger.log(editor.getSelection());
 				editor.replaceSelection('Sample Editor Command');
 			}
 		});
@@ -101,11 +111,11 @@ export default class BrainShardPlugin extends Plugin {
 		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
 		// Using this function will automatically remove the event listener when this plugin is disabled.
 		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			console.log('click', evt);
+			Logger.log('click', evt);
 		});
 
 		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
+		this.registerInterval(window.setInterval(() => Logger.log('setInterval'), 5 * 60 * 1000));
 	}
 
 	onunload() {

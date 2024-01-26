@@ -1,5 +1,4 @@
 import {App, Modal, Setting} from "obsidian";
-import BrainShardPlugin from "../main";
 import {FocusTimer} from "./FocusTimer";
 
 export class StartCounterModal extends Modal {
