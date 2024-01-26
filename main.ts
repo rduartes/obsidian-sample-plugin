@@ -1,4 +1,4 @@
-import {App, Editor, MarkdownView, Plugin, PluginSettingTab, Setting} from 'obsidian';
+import {App, Editor, MarkdownView, Plugin, PluginSettingTab, Setting, TFile} from 'obsidian';
 import {StartCounterModal} from "src/StartCounterModal";
 import {FocusTimer} from "./src/FocusTimer";
 import {Logger} from "./src/Logger";
@@ -38,6 +38,15 @@ export default class BrainShardPlugin extends Plugin {
 	}
 
 	onTimerDashCompleted() {
+		const activeFile:TFile | null = this.app.workspace.getActiveFile();
+		if(activeFile) {
+			this.app.fileManager.processFrontMatter(
+				activeFile,
+				(properties) => {
+					Logger.log(properties)
+				}
+			);
+		}
 		Logger.log(this, 'Well done! Dash completed. Time to rest!');
 	}
 
@@ -54,7 +63,6 @@ export default class BrainShardPlugin extends Plugin {
 		const ribbonIconEl = this.addRibbonIcon('baby', 'Sample Plugin', (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
 			// new Notice('This is a notice!');
-			this.app.fileManager.processFrontMatter(this.app.workspace.getActiveFile()!, (properties) => {Logger.log(properties)});
 			new StartCounterModal(
 				this.app,
 				this.focusTimer,
